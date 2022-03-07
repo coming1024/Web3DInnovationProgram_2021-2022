@@ -1,3 +1,4 @@
+
 function PlayerControl(camera){
     this.controller=new PlayerControl0(camera);
     //console.log(camera.position)
@@ -222,6 +223,7 @@ PlayerControl.prototype={
     },
 }
 function PlayerControl0(camera){
+
     this.camera=camera;
     var scope=this;
     this.KeyboardMoveStep=3;
@@ -291,7 +293,12 @@ function PlayerControl0(camera){
             console.log(","+s);
             scope.autoPath.push(s);
         }else if(event.key==="V")alert(scope.autoPath);
-
+        let data = {
+            x:camera.position.x,
+            y:camera.position.y,
+            z:camera.position.z
+        }
+        socket.send(JSON.stringify(data))
     }
     myKeyboardManager.onKeyUp=function(event){
         if(event.key==="ArrowUp"||event.key==="w")        scope.dposition.forward=0;//forward(step);
@@ -300,7 +307,12 @@ function PlayerControl0(camera){
         else if(event.key==="e"||event.key==="E")         scope.dposition.up=0;
         else if(event.key==="ArrowLeft"||event.key==="a") scope.dposition.left=0;
         else if(event.key==="ArrowRight"||event.key==="d")scope.dposition.left=0;
-
+        let data = {
+            x:camera.position.x,
+            y:camera.position.y,
+            z:camera.position.z
+        }
+        socket.send(JSON.stringify(data))
     }
     myKeyboardManager.init();
 
