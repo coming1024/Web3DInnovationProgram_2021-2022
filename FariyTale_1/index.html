@@ -78,7 +78,7 @@
 
 			let mesh;
 			//let material;
-			const amount = 50;
+			const amount = 20;
 			const count = Math.pow( amount, 2 );
 			const dummy = new THREE.Object3D();
 
@@ -177,7 +177,7 @@
 				console.log(MyOctree)
 				MyOctree.calcBox();
 				MyOctree.split(0)
-				console.log(MyOctree.get_all_tree())
+				MyOctree.get_all_tree()
 				// let test_point=new Vector3(-155,41,10)
 				// re_tree=MyOctree.get_point_tree(test_point)
 				// console.log(re_tree.points.length)
@@ -328,7 +328,6 @@
 						//
 						mesh.setMatrixAt(i++, dummy.matrix);
 					}
-					console.log(dummy)
 
 					// for (let k=3;k<=10;k++){
 					// 	let p=0.5*k
@@ -364,6 +363,7 @@
 
 					if(scope.old_position===undefined)
 					{
+						re_tree=MyOctree.get_point_tree(camera.position)
 						scope.old_position=Object.assign({},scope.controller.camera.position)
 					}
 					else if(scope.old_position.x!==scope.controller.camera.position.x&&scope.old_position.y!==scope.controller.camera.position.y&&scope.old_position.z!==scope.controller.camera.position.z){

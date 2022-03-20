@@ -657,7 +657,7 @@ class Octree {
 		const subTrees = [];
 		//将每个边长的一半作为一个参数存在halfsize中，三维向量
 		const halfsize = _v2.copy( this.box.max ).sub( this.box.min ).multiplyScalar( 0.5 );//划分空间box
-		// console.log("halfsize:"+halfsize)
+		// console.log("halfsize:"+halfsize.x+' '+halfsize.y+' '+halfsize.z)
 		//分为八个小的立方体，因此是2*2*2
 		for ( let x = 0; x < 2; x ++ ) {
 
@@ -692,7 +692,7 @@ class Octree {
 				//console.log(point)
 
 				//console.log(subTrees[i].box)
-				if ( point.x <= subTrees[i].box.max.x+this.sight_distance & point.x >= subTrees[i].box.min.x-this.sight_distance & point.y <= subTrees[i].box.max.y+this.sight_distance & point.y >= subTrees[i].box.min.y-this.sight_distance & point.z <= subTrees[i].box.max.z+this.sight_distance & point.z >= subTrees[i].box.min.z-this.sight_distance){
+				if ( point.x <= subTrees[i].box.max.x+this.sight_distance && point.x >= subTrees[i].box.min.x-this.sight_distance && point.y <= subTrees[i].box.max.y+this.sight_distance && point.y >= subTrees[i].box.min.y-this.sight_distance && point.z <= subTrees[i].box.max.z+this.sight_distance && point.z >= subTrees[i].box.min.z-this.sight_distance){
 					// console.log(123)
 					// console.log(num)
 					// this.tempNums.push(num);
@@ -709,7 +709,7 @@ class Octree {
 
 			const len = subTrees[ i ].points.length;
 
-			if ( len > 8 && level < 16&&halfsize.x>=this.sight_distance ) {//level限制高度//限制视距
+			if ( len > 8 && level < 16&&subTrees[i].box.max.x-subTrees[i].box.min.x>=this.sight_distance ) {//level限制高度//限制视距
 
 				subTrees[ i ].split( level + 1 );//对于octree类型操作
 
@@ -734,7 +734,7 @@ class Octree {
 	get_point_tree(point){
 		let tree
 		for(let i=0;i<this.subTrees.length;i++){
-			if ( point.x <= this.subTrees[i].box.max.x & point.x >= this.subTrees[i].box.min.x & point.y <= this.subTrees[i].box.max.y & point.y >= this.subTrees[i].box.min.y & point.z <= this.subTrees[i].box.max.z & point.z >= this.subTrees[i].box.min.z) {
+			if ( point.x <= this.subTrees[i].box.max.x && point.x >= this.subTrees[i].box.min.x && point.y <= this.subTrees[i].box.max.y && point.y >= this.subTrees[i].box.min.y && point.z <= this.subTrees[i].box.max.z && point.z >= this.subTrees[i].box.min.z) {
 				if(this.subTrees[i].subTrees.length!==0){
 					tree=this.subTrees[i].get_point_tree(point)
 					break
