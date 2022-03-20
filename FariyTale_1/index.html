@@ -233,7 +233,7 @@
 				//const material = new THREE.MeshNormalMaterial();
 				mesh = new THREE.InstancedMesh(initBox,material,count);
 				//mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-				scope.scene.add(mesh);
+				//scope.scene.add(mesh);
 
 				let geometries = [];
 				let transform = new THREE.Object3D();
@@ -280,6 +280,8 @@
 				// re_tree=MyOctree.get_point_tree(scope.camera.position)
 
 				scope.myRender();
+
+				scope.scene.add(mesh);
 
 				// console.log(MyOctree)
 
