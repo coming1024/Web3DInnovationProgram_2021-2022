@@ -737,9 +737,11 @@ class Octree {
 			if ( point.x <= this.subTrees[i].box.max.x & point.x >= this.subTrees[i].box.min.x & point.y <= this.subTrees[i].box.max.y & point.y >= this.subTrees[i].box.min.y & point.z <= this.subTrees[i].box.max.z & point.z >= this.subTrees[i].box.min.z) {
 				if(this.subTrees[i].subTrees.length!==0){
 					tree=this.subTrees[i].get_point_tree(point)
+					break
 				}
 				else{
 					tree=this.subTrees[i]
+					break
 				}
 			}
 		}

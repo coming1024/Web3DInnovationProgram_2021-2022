@@ -47,7 +47,7 @@
 		import {Octree} from "./js/lib/Octree.js";
 		import {Vector3} from "./js/lib/three.module.js";
 
-		const sight_distance=50
+		const sight_distance=10
 		const MyOctree = new Octree(sight_distance)
 		let re_tree
 		let myMain = new Main();
@@ -159,7 +159,7 @@
 				//Octree initate
 				const camera1 = new Vector3(0,0,0);//
 				// MyOctree.initiatePosition(this.camera.position,10)
-				MyOctree.initiatePosition(camera1,1000)
+				MyOctree.initiatePosition(camera1,50)
 
 				// for (let i=0;i<=5;i++){
 				// 	let p=0.5*i-155
@@ -167,8 +167,8 @@
 				// }
 				let re_tree_num=0;
 
-				for(let x=0;x<10000;x=x+2){
-					for(let z=0;z<10000;z=z+2){
+				for(let x=0;x<100;x=x+2){
+					for(let z=0;z<100;z=z+2){
 						MyOctree.addObject(new Vector3(x,0,z),re_tree_num)
 						re_tree_num++
 					}
@@ -177,6 +177,7 @@
 				console.log(MyOctree)
 				MyOctree.calcBox();
 				MyOctree.split(0)
+				console.log(MyOctree.get_all_tree())
 				// let test_point=new Vector3(-155,41,10)
 				// re_tree=MyOctree.get_point_tree(test_point)
 				// console.log(re_tree.points.length)
@@ -320,10 +321,12 @@
 
 					for(let k=0;k<re_tree.points.length;k++){
 						dummy.position.set(re_tree.points[k].x,re_tree.points[k].y,re_tree.points[k].z)
+
 						dummy.updateMatrix();
 						//
 						mesh.setMatrixAt(i++, dummy.matrix);
 					}
+					console.log(dummy)
 
 					// for (let k=3;k<=10;k++){
 					// 	let p=0.5*k
@@ -349,14 +352,23 @@
 			this.controller=new PlayerControl0(camera);
 			//console.log(camera.position)
 			this.frustum;
+			this.old_position=undefined
 			this.init=function () {
 				var scope=this;
 				this.controller.KeyboardMoveStep=1;
 				function tool(){
 					requestAnimationFrame(tool);
 					scope.controller.update();
-					console.log(camera.position.x,camera.position.y,camera.position.z)
-					re_tree=MyOctree.get_point_tree(camera.position)
+
+					if(scope.old_position===undefined)
+					{
+						scope.old_position=Object.assign({},scope.controller.camera.position)
+					}
+					else if(scope.old_position.x!==scope.controller.camera.position.x&&scope.old_position.y!==scope.controller.camera.position.y&&scope.old_position.z!==scope.controller.camera.position.z){
+						console.log(camera.position.x,camera.position.y,camera.position.z)
+						re_tree=MyOctree.get_point_tree(camera.position)
+						scope.old_position=Object.assign({},scope.controller.camera.position)
+					}
 					//callback();
 
 					// console.log(camera.position.x,camera.position.y,camera.position.z)
