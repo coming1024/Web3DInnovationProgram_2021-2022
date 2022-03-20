@@ -11,6 +11,14 @@
 
 	<body>
 
+
+	<script src="js/lib/three.module.js" type="module"></script>
+	<script src="js/lib/stats.module.js" type="module"></script>
+	<script src="js/lib/OBB.js" type="module"></script>
+
+	<script src="js/lib/Capsule.js" type="module"></script>
+	<script src="js/lib/Octree.js" type="module"></script>
+
 	<script src="js/lib/threeJS/three.js"></script>
 	<script src="js/lib/threeJS/OrbitControls.js"></script>
 	<script src="js/lib/threeJS/GLTFLoader.js"></script>
@@ -29,25 +37,818 @@
 	<script src="js/playerControl/PlayerControl.js"></script>
 	<script src="js/playerControl/PreviewManager.js"></script>
 
-	<script src="js/ResourceLoader.js"></script>
+<!--	<script src="js/ResourceLoader.js"></script>-->
 	<script src="js/ParamMeasure.js"></script>
-	<script src="js/Main.js"></script>
+<!--	<script src="js/lib/Octree.js"></script>-->
+<!--	<script src="js/Main.js"></script>-->
 
-	<script  type="module">
+	<script type="module">
 
+		import {Octree} from "./js/lib/Octree.js";
+		import {Vector3} from "./js/lib/three.module.js";
 
-		var myMain = new Main();
+		const sight_distance=50
+		const MyOctree = new Octree(sight_distance)
+		let re_tree
+		let myMain = new Main();
 		myMain.start();
 
-
-		myMain.camera.position.set(26.5474101, 9.609053, 10.9);
+		// myMain.camera.position.set(26.5474101, 9.609053, 10.9);
+		myMain.camera.position.set(0,0,0)
 		myMain.camera.rotation.set(0.0793021902702234, 0.8739098399535151,  -0.0608649);
 
-		new PlayerControl(myMain.camera);
-		window.c=myMain.camera;
+		// console.log(re_tree.points,re_tree.box.max,re_tree.box.min,1111)
+
+		//new PlayerControl(myMain.camera);
+		//window.c=myMain.camera;
 
 		var myRoomManager = new RoomManager(null,myMain.camera);
 		myMain.scene.add(myRoomManager.room);
+
+		// import {Octree} from "./lib/Octree.js";
+		// import {Vector3} from "./lib/three.module.js";
+		//
+		// const {Octree} = require("./lib/Octree");
+
+		// import {Octree} from "./lib/Octree";
+
+		function Main(){
+			//console.log(2);
+			//let camera, scene, renderer, stats;
+
+			let mesh;
+			//let material;
+			const amount = 50;
+			const count = Math.pow( amount, 2 );
+			const dummy = new THREE.Object3D();
+
+			let winWidth;
+			let winHeight;
+			// const {Octree} = require("./lib/Octree");
+
+			//Octree initate
+			// const sight_distance=10000
+			// const MyOctree = new Octree(sight_distance)
+			// let re_tree
+
+			/*const Method = {
+                INSTANCED: 'INSTANCED',
+                MERGED: 'MERGED',
+                NAIVE: 'NAIVE'
+            };
+
+            const api = {
+                method: Method.INSTANCED,
+                count: 1000
+            };*/
+
+			var scope=this;
+			this.VR=false;
+			this.scene=new THREE.Scene();
+			var width=window.innerWidth;
+			var height=window.innerHeight;
+			this.camera=
+					//new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 0.001, 100 );
+					new THREE.PerspectiveCamera( 70,window.innerWidth /window.innerHeight, 0.1, 1000 );;
+			// this.render;
+			this.effect;
+			//this.camera = new THREE.OrthographicCamera(window.innerWidth/ - 1,window.innerWidth,window.innerHeight,window.innerHeight/ - 1, 0, 100000 );
+			this.winWidth = window.innerWidth;
+			this.winHeight = window.innerHeight;
+			//this.divInfo = document.getElementById('pminfo');//用于呈现文字
+			this.start=function () {
+				this.init();
+				//console.log(scope.camera.position);
+				this.animate();
+				// console.log(MyOctree)
+				// MyOctree.calcBox();
+				// MyOctree.split(0)
+				// let test_point=new Vector3(3,2,5)
+				// let re_tree=MyOctree.get_point_tree(test_point)
+				// console.log(re_tree.points,re_tree.box.max,re_tree.box.min)
+			}
+			this.init=function()
+			{
+				this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true});
+				this.renderer.autoClear = false;
+				this.renderer.setPixelRatio( window.devicePixelRatio );
+
+				this.renderer.gammaInput = true;
+				this.renderer.gammaOutput = true;
+
+				winWidth = window.innerWidth;
+				winHeight = window.innerHeight;
+
+				this.renderer.setSize(winWidth, winHeight);
+				if(scope.VR)this.effect = new THREE.StereoEffect(this.renderer)
+				document.body.appendChild( this.renderer.domElement );
+
+				// CAMERAS
+				// this.camera.position.set(-155,41,22,-2.07);//-155,41,22,-2.07,-1.49,-2.07
+				this.camera.position.set(0,0,0)
+				this.camera.rotation.set(-1.5572,-1.47875,-1.55714);//
+
+				//initate controller
+				new PlayerControl(myMain.camera)
+				window.c=myMain.camera
+
+				// //Octree initate
+				// const sight_distance=2
+				// const MyOctree = new Octree(sight_distance)
+
+				//Octree initate
+				const camera1 = new Vector3(0,0,0);//
+				// MyOctree.initiatePosition(this.camera.position,10)
+				MyOctree.initiatePosition(camera1,1000)
+
+				// for (let i=0;i<=5;i++){
+				// 	let p=0.5*i-155
+				// 	MyOctree.addObject(new Vector3(3*i,0,i),i)
+				// }
+				let re_tree_num=0;
+
+				for(let x=0;x<10000;x=x+2){
+					for(let z=0;z<10000;z=z+2){
+						MyOctree.addObject(new Vector3(x,0,z),re_tree_num)
+						re_tree_num++
+					}
+				}
+
+				console.log(MyOctree)
+				MyOctree.calcBox();
+				MyOctree.split(0)
+				// let test_point=new Vector3(-155,41,10)
+				// re_tree=MyOctree.get_point_tree(test_point)
+				// console.log(re_tree.points.length)
+
+
+				// for (let k=3;k<=10;k++){
+				// 	let p=0.5*k
+				// 	MyOctree.addObject(new Vector3(p,p,p),k)
+				// }
+
+				// console.log(MyOctree)
+				//
+				// MyOctree.calcBox();
+				// MyOctree.split(0)
+				// let test_point=new Vector3(0,2,5)
+				// let re_tree=MyOctree.get_point_tree(test_point)
+				// console.log(re_tree)
+
+
+				window.c=this.camera;
+
+				var ambient = new THREE.AmbientLight(0xffffff , 1 );
+				var point = new THREE.PointLight(0XFFFFFF,1);
+				this.scene.add( ambient );
+				this.scene.add(point);
+
+				//json
+				// const loader = new THREE.BufferGeometryLoader();
+				// loader.load('MyModel/json/MyDemo1.json',function(geometry){
+				//    geometry.computeVertexNormals();
+				//    geometry.scale(0.1,0.1,0.1);
+				//    //const material = new THREE.MeshPhysicalMaterial({color:0x00ff00});
+				//     const material = new THREE.MeshNormalMaterial();
+				//     //const material = new THREE.MeshBasicMaterial({color:0x9F9F5F});
+				//    mesh = new THREE.InstancedMesh(geometry,material,count);
+				//    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+				//    //console.log(typeof(mesh))
+				//    scope.scene.add(mesh);
+				// });
+
+				//box测试//生成地面
+				const initBox = new THREE.BoxBufferGeometry(1,1,1);
+				var cubeMaterials = [
+					new THREE.MeshLambertMaterial( { map: new THREE.TextureLoader().load( 'js/img/side.png' ), side: THREE.DoubleSide } ), // right
+					new THREE.MeshLambertMaterial( { map: new THREE.TextureLoader().load( 'js/img/side.png' ), side: THREE.DoubleSide } ),  // left
+					new THREE.MeshLambertMaterial( { map: new THREE.TextureLoader().load( 'js/img/top.png' ), side: THREE.DoubleSide } ),  // top
+					new THREE.MeshLambertMaterial( { map: new THREE.TextureLoader().load( 'js/img/bottom.png' ), side: THREE.DoubleSide } ),  // bottom
+					new THREE.MeshLambertMaterial( { map: new THREE.TextureLoader().load( 'js/img/side.png' ), side: THREE.DoubleSide } ),  // front
+					new THREE.MeshLambertMaterial( { map: new THREE.TextureLoader().load( 'js/img/side.png' ), side: THREE.DoubleSide } ),  // back
+				];
+
+				var material = new THREE.MeshFaceMaterial(cubeMaterials);
+				//const material = new THREE.MeshNormalMaterial();
+				mesh = new THREE.InstancedMesh(initBox,material,count);
+				//mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+				scope.scene.add(mesh);
+
+				let geometries = [];
+				let transform = new THREE.Object3D();
+				for(let index= 0 ;index<3;index++){
+
+				}
+
+				//性能监视器stats.js开始
+				/*var stats = new Stats();
+                //stats.setMode(0);
+                //stats.domElement.style.position = 'absolute';
+                //stats.domElement.style.left = '0px';
+                //stats.domElement.style.top = '0px';
+                document.body.appendChild(stats.domElement);
+                setInterval(function () {
+                    stats.begin();
+                    stats.end();
+                }, 100)*/
+				//性能监视器stats.js结束
+
+			}
+			this._onResize=function()
+			{
+				this.winWidth = window.innerWidth;
+				this.winHeight = window.innerHeight;
+
+				this.camera.aspect = winWidth / winHeight;
+				this.camera.updateProjectionMatrix();
+				// console.log(this.camera.position.x,this.camera.position.y,this.camera.position.z)
+
+				this.renderer.setSize(winWidth, winHeight);
+			}
+			this.animate=function()
+			{
+				if(scope.VR)scope.effect.render(scope.scene, scope.camera);
+				else scope.renderer.render(scope.scene,scope.camera);
+				// console.log(scope.camera.position.x,scope.camera.position.y,scope.camera.position.z)
+				//scope.divInfo.textContent='场景中三角面个数:' + renderer.info.render.triangles;
+				if (window.innerWidth !== scope.winWidth || window.innerHeight !== scope.winHeight) scope._onResize();
+				requestAnimationFrame(scope.animate);
+
+				// console.log(scope.camera.position.x,scope.camera.position.y,scope.camera.position.z)
+
+				// re_tree=MyOctree.get_point_tree(scope.camera.position)
+
+				scope.myRender();
+
+				// console.log(MyOctree)
+
+			}
+			this.myRender=function()
+			{
+				if(mesh) {
+					let subPointNum=1
+					let i = 0;
+					const offset = (amount - 1) / 2;
+
+					// for (let x = 0; x < amount; x++) {
+					//
+					// 	//for ( let y = 0; y < amount; y ++ ) {
+					//
+					// 	for (let z = 0; z < amount; z++) {
+					//
+					// 		//dummy.position.set((offset - x) * 3,/*Math.sin(x)*/x / 7, (offset - z) * 3);//
+					// 		if(x<50) {
+					// 			dummy.position.set(3*x,0,z);
+					// 			//const tempPoint = new Vector3(3*x,0,z)
+					// 			//Octree add point
+					// 			//MyOctree.addObject(tempPoint,subPointNum)
+					// 			//subPointNum++
+					// 		}
+					// 		else {dummy.position.set(3*x,x-50,z);}
+					// 		//else if(x<25){dummy.position.set(3*x,x+50,z);}
+					// 		//dummy.rotation.y = ( Math.sin( x / 4 + time ) + Math.sin( y / 4 + time ) + Math.sin( z / 4 + time ) );
+					// 		//dummy.rotation.z = dummy.rotation.y * 2;
+					//
+					// 		dummy.updateMatrix();
+					//
+					// 		mesh.setMatrixAt(i++, dummy.matrix);
+					//
+					// 	}
+					//
+					// }
+
+
+					for(let k=0;k<re_tree.points.length;k++){
+						dummy.position.set(re_tree.points[k].x,re_tree.points[k].y,re_tree.points[k].z)
+						dummy.updateMatrix();
+						//
+						mesh.setMatrixAt(i++, dummy.matrix);
+					}
+
+					// for (let k=3;k<=10;k++){
+					// 	let p=0.5*k
+					// 	MyOctree.addObject(new Vector3(p,p,p),k)
+					// }
+					//
+					// MyOctree.calcBox();
+					// MyOctree.split(0)
+					// let test_point=new Vector3(0,2,5)
+					// let re_tree=MyOctree.get_point_tree(test_point)
+					// console.log(re_tree)
+					// console.log(re_tree.points,re_tree.box.max,re_tree.box.min)
+					mesh.instanceMatrix.needsUpdate = true;
+				}
+				scope.renderer.render( scope.scene, scope.camera );
+
+			}
+		}
+
+
+		//playerControl
+		function PlayerControl(camera){
+			this.controller=new PlayerControl0(camera);
+			//console.log(camera.position)
+			this.frustum;
+			this.init=function () {
+				var scope=this;
+				this.controller.KeyboardMoveStep=1;
+				function tool(){
+					requestAnimationFrame(tool);
+					scope.controller.update();
+					console.log(camera.position.x,camera.position.y,camera.position.z)
+					re_tree=MyOctree.get_point_tree(camera.position)
+					//callback();
+
+					// console.log(camera.position.x,camera.position.y,camera.position.z)
+					//return camera.position;//能否每帧刷新时更新最新的camera坐标并把其传给resourceloarder中的camera position
+					//能否将camera的变化同步到dom中不断更新，当resourceloader需要用的时候再获取此时的camera position
+
+				}tool();
+				//console.log(tool())
+			}
+			this.init();
+
+		}/**/
+		PlayerControl.prototype={
+
+			computeFrustumFromCamera:function(){//求视锥体
+				var camera=this.controller.camera;
+				var frustum = new THREE.Frustum();
+				//frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix,camera.matrixWorldInverse ) );
+
+				const projScreenMatrix = new THREE.Matrix4();
+				projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+				frustum.setFromProjectionMatrix(projScreenMatrix);
+				this.frustum=frustum;
+				return frustum;
+			},
+			intersectsSphere(mesh){
+				mesh.geometry.computeBoundingBox();
+
+				var box=mesh.geometry.boundingBox;
+				var sx=mesh.scale.x;
+				var sy=mesh.scale.y;
+				var sz=mesh.scale.z;
+
+				var r=Math.pow(
+						sx*Math.pow(box.max.x-box.min.x,2)+
+						sy*Math.pow(box.max.y-box.min.y,2)+
+						sz*Math.pow(box.max.z-box.min.z,2),
+						0.5
+				)/2;
+
+				return this.intersectsSphere0([
+					mesh.geometry.boundingSphere.center.x
+					+mesh.matrixWorld.elements[12],
+					mesh.geometry.boundingSphere.center.y
+					+mesh.matrixWorld.elements[13],
+					mesh.geometry.boundingSphere.center.z
+					+mesh.matrixWorld.elements[14]
+				], r );
+			},
+			intersectsSphere0(pos,radius ) {
+				var center=new THREE.Vector3(pos[0],pos[1],pos[2])
+				const planes = this.frustum.planes;
+				//const center = sphere.center;
+				const negRadius = - radius;
+				for ( let i = 0; i < 6; i ++ ) {
+					const distance = planes[ i ].distanceToPoint( center );//平面到点的距离，
+					if ( distance < negRadius ) {//内正外负
+						return false;//不相交
+					}
+				}
+				//console.log(center);
+				return true;//相交
+			},
+			cullingTest(scene){
+				var scope=this;
+				setInterval(function () {
+					scope.computeFrustumFromCamera();
+					scene.traverse(function (node) {
+						if(node  instanceof THREE.Mesh){
+							node.geometry.computeBoundingSphere();
+							node.frustumCulled=false;
+							if(node.geometry.boundingSphere){
+								node.visible=scope.intersectsSphere(node);
+								//console.log(node)console.log(mesh.name+":"+node.visible)
+							}else{
+								node.geometry.computeBoundingSphere();
+							}
+						}
+					})
+				},2000)
+			},
+			showFrustum(scene){
+
+				/*for(i=0;i<6;i++)
+                    for(j=i;j<6;j++)
+                        for(k=j;k<6;k++){
+                            var spot=getSpot(
+                                this.frustum.planes[i],
+                                this.frustum.planes[j],
+                                this.frustum.planes[k]
+                            );
+                            console.log(spot);
+                            var material = new THREE.MeshNormalMaterial();
+                            var geometry= new THREE.CubeGeometry(1,1,1);
+                            var mesh= new THREE.Mesh(geometry, material);
+                            mesh.position.set(spot.x,spot.y,spot.z);
+                            scene.add(mesh);
+                        }*/
+
+				/*this.frustum.planes[0]={normal:{x:1,y:0,z:0},constant:-1}
+                this.frustum.planes[1]={normal:{x:0,y:1,z:0},constant:-1}
+                this.frustum.planes[2]={normal:{x:0,y:0,z:1},constant:-1}*/
+				/*
+                前后是平行的
+                * 0上
+                * 1下
+                * 2左
+                * 3右
+                * 4前
+                * 5后
+                * */
+
+				var spots=[];
+				for(var i=0;i<2;i++)
+					for(j=0;j<2;j++)
+						for(k=0;k<2;k++)
+							spots.push(
+									getSpot(
+											this.frustum.planes[i],
+											this.frustum.planes[2+j],
+											this.frustum.planes[4+k]
+									).multiplyScalar(0.1)
+							);
+				/*
+                console.log(spot0);
+                var material0 = new THREE.MeshNormalMaterial();
+                var geometry0= new THREE.CubeGeometry(1,1,1);
+                var mesh0= new THREE.Mesh(geometry0, material0);
+                mesh0.position.set(spot0.x,spot0.y,spot0.z);
+                */
+				var material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+				var geometry = new THREE.Geometry();
+				//侧面
+				geometry.vertices.push(spots[0]);
+				geometry.vertices.push(spots[1]);
+				geometry.vertices.push(spots[3]);
+				geometry.vertices.push(spots[2]);
+				geometry.vertices.push(spots[0]);
+
+				//侧面
+				geometry.vertices.push(spots[4]);
+				geometry.vertices.push(spots[6]);
+				geometry.vertices.push(spots[7]);
+				geometry.vertices.push(spots[5]);
+				geometry.vertices.push(spots[4]);
+
+				//前面
+				geometry.vertices.push(spots[4]);
+				geometry.vertices.push(spots[0]);
+				geometry.vertices.push(spots[2]);
+				geometry.vertices.push(spots[6]);
+				geometry.vertices.push(spots[4]);
+
+				//移动
+				geometry.vertices.push(spots[5]);
+
+				//后面
+				geometry.vertices.push(spots[5]);
+				geometry.vertices.push(spots[1]);
+				geometry.vertices.push(spots[3]);
+				geometry.vertices.push(spots[7]);
+				geometry.vertices.push(spots[5]);
+
+				console.log(spots.length)
+				var line = new THREE.Line( geometry, material );
+				scene.add(line );
+				function getSpot(plane0,plane1,plane2) {
+					var n0=plane0.normal;
+					var n1=plane1.normal;
+					var n2=plane2.normal;
+					var array1=[
+						n0.x,n0.y,n0.z,
+						n1.x,n1.y,n1.z,
+						n2.x,n2.y,n2.z
+					]
+					var array2=[
+						plane0.constant,
+						plane1.constant,
+						plane2.constant
+					]
+					return getSpotPos(array1,array2);
+				}
+				function getSpotPos(m_arr,vec_arr) {
+					const m = new THREE.Matrix3();
+					m.set(
+							m_arr[0],m_arr[1],m_arr[2],
+							m_arr[3],m_arr[4],m_arr[5],
+							m_arr[6],m_arr[7],m_arr[8],
+					);
+					const vec1 = new THREE.Vector3(
+							vec_arr[0], vec_arr[1], vec_arr[2]
+					);//看成一个列向量
+					const vec2=multiplication(m,vec1)
+					vec2.multiplyScalar(-1);
+					console.log(vec2);
+					return vec2;
+					function multiplication(matrix,vector) {
+						var e=matrix.elements;
+						var x=vector.x;
+						var y=vector.y;
+						var z=vector.z;
+						return new THREE.Vector3(
+								x*e[0]+y*e[3]+z*e[6],
+								x*e[1]+y*e[4]+z*e[7],
+								x*e[2]+y*e[5]+z*e[8]
+						);
+					}
+				}
+				//m.invert ();
+
+
+
+
+			},
+		}
+		function PlayerControl0(camera){
+			this.camera=camera;
+			var scope=this;
+			this.KeyboardMoveStep=3;
+			this.autoPath=[];
+
+			this.onceClicked=false;
+
+			this.dposition={
+				left:0,
+				forward:0,
+				up:0
+			}//[0,0,0];//left、forward、up
+
+			this.update=function () {
+				if(scope.dposition.left)scope.left(scope.dposition.left);
+				if(scope.dposition.forward)scope.forward(scope.dposition.forward);
+				if(scope.dposition.up)scope.up(scope.dposition.up);
+
+				//console.log(camera.position)//此处相机位置不断更新
+
+			}
+			this.ableRotation=true;
+
+			var myMouseManager=new MouseManager();
+			myMouseManager.dragMouse=function (dx,dy) {
+				scope.onceClicked=true;
+				if(!scope.ableRotation)return;
+				scope.rotation1(-0.015*dx);
+				scope.rotation2(-0.015*dy);
+			}
+			myMouseManager.onMouseWheel=function(event){
+				var delta = 0;
+				if ( event.wheelDelta !== undefined )delta = event.wheelDelta;
+				else if ( event.detail !== undefined )delta = - event.detail;
+				scope.forward(delta/2);
+			}
+
+			var myKeyboardManager=new KeyboardManager();
+			myMouseManager.init();
+			myKeyboardManager.onKeyDown=function(event){
+				var step=scope.KeyboardMoveStep;
+				if(event.key==="ArrowUp"||event.key==="w")scope.dposition.forward=step;//forward(step);
+				else if(event.key==="ArrowDown"||event.key==="s")scope.dposition.forward=-step;//forward(-step);
+				else if(event.key==="q"||event.key==="Q")scope.dposition.up=step;
+				else if(event.key==="e"||event.key==="E")scope.dposition.up=-step;
+				else if(event.key==="ArrowLeft"||event.key==="a")scope.dposition.left=step;
+				else if(event.key==="ArrowRight"||event.key==="d")scope.dposition.left=-step;
+
+				else if(event.key==="W")scope.forward_horizon(step);
+				else if(event.key==="S")scope.forward_horizon(-step);
+				else if(event.key==="A")scope.left_horizon(step);
+				else if(event.key==="D")scope.left_horizon(-step);
+				else if(event.key==="v"){
+					var a=Math.floor(scope.camera.rotation.x*100000)/100000;
+					var b=Math.floor(scope.camera.rotation.y*100000)/100000;
+					var c=Math.floor(scope.camera.rotation.z*100000)/100000;
+					/*if(a<-Math.PI)a+=Math.PI*2;
+                    if(b<-Math.PI)b+=Math.PI*2;
+                    if(c<-Math.PI)c+=Math.PI*2;*/
+					var s="["+
+							Math.floor(scope.camera.position.x*100)/100+","+
+							Math.floor(scope.camera.position.y*100)/100+","+
+							Math.floor(scope.camera.position.z*100)/100+","+
+							a+","+
+							b+","+
+							c+",100]"
+					console.log(","+s);
+					scope.autoPath.push(s);
+				}else if(event.key==="V")alert(scope.autoPath);
+
+			}
+			myKeyboardManager.onKeyUp=function(event){
+				if(event.key==="ArrowUp"||event.key==="w")        scope.dposition.forward=0;//forward(step);
+				else if(event.key==="ArrowDown"||event.key==="s") scope.dposition.forward=0;//forward(-step);
+				else if(event.key==="q"||event.key==="Q")         scope.dposition.up=0;
+				else if(event.key==="e"||event.key==="E")         scope.dposition.up=0;
+				else if(event.key==="ArrowLeft"||event.key==="a") scope.dposition.left=0;
+				else if(event.key==="ArrowRight"||event.key==="d")scope.dposition.left=0;
+
+			}
+			myKeyboardManager.init();
+
+			var myPhoneManager=new PhoneManager();
+			myPhoneManager.drag=function(dx,dy){
+				if(!scope.ableRotation)return;
+				scope.rotation1(-0.015*dx);
+				scope.rotation2(-0.015*dy);
+			}
+			myPhoneManager.dragDouble=function(distanceChange){
+				scope.forward(distanceChange);
+			}
+			myPhoneManager.init();
+
+			this.rotation1=function(step){//水平旋转
+				var direction0=this.camera.getWorldDirection();
+				var direction = new THREE.Vector3(//up方向
+						0,1,0
+				);
+				var pos=this.camera.position;
+				direction0.applyAxisAngle(direction,step);
+				this.camera.lookAt(pos.x+direction0.x,
+						pos.y+direction0.y,
+						pos.z+direction0.z);
+				this.camera.updateMatrix();
+			}
+			this.rotation2=function(step){//俯仰角
+				var direction1=this.camera.getWorldDirection();
+				var direction2 = new THREE.Vector3(//up方向
+						0,1,0
+				);
+				var direction=new THREE.Vector3();
+				direction=direction.crossVectors(direction1,direction2);
+				var pos=this.camera.position;
+				direction1.applyAxisAngle(direction,step);
+				this.camera.lookAt(pos.x+direction1.x,
+						pos.y+direction1.y,
+						pos.z+direction1.z);
+				this.camera.updateMatrix();
+			}
+			this.move=function(x,y,z){
+				this.forward(x);
+				this.up(y);
+				this.left(z);
+			}
+			this.up=function (step) {//相机的上方向是（0，1，0）
+				var direction = new THREE.Vector3(
+						0.1*this.camera.matrixWorld.elements[4]*step
+						,0.1*this.camera.matrixWorld.elements[5]*step
+						,0.1*this.camera.matrixWorld.elements[6]*step
+				);
+				this.camera.position.set(
+						this.camera.position.x+direction.x,
+						this.camera.position.y+direction.y,
+						this.camera.position.z+direction.z
+				);
+			}
+			this.forward=function (step) {//相机的初始方向是（0，0，-1）//对y旋转-90度后相机为水平方向camera.rotation.set(0,-Math.PI/2,0);
+				var direction = new THREE.Vector3(
+						-0.1*this.camera.matrixWorld.elements[8]*step
+						,-0.1*this.camera.matrixWorld.elements[9]*step
+						,-0.1*this.camera.matrixWorld.elements[10]*step
+				);
+				this.camera.position.set(
+						this.camera.position.x+direction.x,
+						this.camera.position.y+direction.y,
+						this.camera.position.z+direction.z
+				);
+			}
+			this.left=function (step) {//相机的左方向是（-1，0，0）
+				var direction = new THREE.Vector3(
+						-0.1*this.camera.matrixWorld.elements[0]*step
+						,-0.1*this.camera.matrixWorld.elements[1]*step
+						,-0.1*this.camera.matrixWorld.elements[2]*step
+				);
+				this.camera.position.set(
+						this.camera.position.x+direction.x,
+						this.camera.position.y+direction.y,
+						this.camera.position.z+direction.z
+				);
+			}
+			this.left_horizon=function (step) {//相机的左方向是（-1，0，0）
+				var direction = new THREE.Vector3(
+						-0.1*this.camera.matrixWorld.elements[0]*step
+						,0
+						,-0.1*this.camera.matrixWorld.elements[2]*step
+				);
+				this.camera.position.set(
+						this.camera.position.x+direction.x,
+						this.camera.position.y+direction.y,
+						this.camera.position.z+direction.z
+				);
+			}
+			this.forward_horizon=function (step) {//相机的初始方向是（0，0，-1）//对y旋转-90度后相机为水平方向camera.rotation.set(0,-Math.PI/2,0);
+				var direction = new THREE.Vector3(
+						-0.1*this.camera.matrixWorld.elements[8]*step
+						,0
+						,-0.1*this.camera.matrixWorld.elements[10]*step
+				);
+				this.camera.position.set(
+						this.camera.position.x+direction.x,
+						this.camera.position.y+direction.y,
+						this.camera.position.z+direction.z
+				);
+			}
+		}
+		function MouseManager(){
+			var scope=this;
+			this.press=false;//鼠标未处于按下状态
+			this.preX=-1;
+			this.preY=-1;
+			this.dragMouse=function(dx,dy){
+				console.log(dx,dy);
+			}
+			this.onMouseMove=function( event ) {//鼠标移动事件监听
+				if(scope.press&&scope.preX!==-1&&scope.preY!==-1)
+					scope.dragMouse(event.x-scope.preX,event.y-scope.preY);
+				scope.preX=event.x;
+				scope.preY=event.y;
+			}
+			this.onMouseUp=function( event ) {//鼠标移动事件监听
+				scope.press=false;
+				//console.log(1);
+			}
+			this.onMouseDown=function( event ) {//鼠标移动事件监听
+				scope.press=true;
+				//console.log(2);
+			}
+			this.onMouseWheel=function(event){
+				console.log(event);
+			}
+			this.init=function() {
+				document.addEventListener( 'mousemove',scope.onMouseMove, true );
+				document.addEventListener( 'mouseup', scope.onMouseUp, true );
+				document.addEventListener( 'mousedown',scope.onMouseDown, true );
+				document.addEventListener( 'mousewheel', scope.onMouseWheel, false );
+			}
+		}
+		function KeyboardManager(){
+			var scope=this;
+			this.onKeyDown=function(event){
+				console.log(event);
+			}
+			this.onKeyUp=function(event){
+				console.log(event);
+			}
+			this.init=function(){
+				window.addEventListener( 'keydown',scope.onKeyDown, false );
+				window.addEventListener( 'keyup',scope.onKeyUp  , false );
+			}
+		}
+		function PhoneManager(){
+			var scope=this;
+			this.preX=-1;
+			this.preY=-1;
+			this.preDistance=-1;
+			this.drag=function(dx,dy){
+				console.log(dx,dy);
+			}
+			this.dragDouble=function(distanceChange){
+				console.log(distanceChange);
+			}
+			this.onTouchMove = function (event) {
+				//event.touches.length//同时出现的触摸点个数
+				if(event.touches.length===1){
+					if(scope.preX>=0&&scope.preY>=0)
+						scope.drag(
+								event.touches[ 0 ].pageX-scope.preX,
+								event.touches[ 0 ].pageY-scope.preY
+						);
+					scope.preX=event.touches[ 0 ].pageX;
+					scope.preY=event.touches[ 0 ].pageY;
+				}else if(event.touches.length===2){
+					var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+					var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+					var distance = Math.sqrt( dx * dx + dy * dy );
+					if(scope.preDistance>=0)
+						scope.dragDouble(distance-scope.preDistance);
+					scope.preDistance=distance;
+				}
+			}
+			this.onTouchEnd=function () {
+				scope.preX=-1;
+				scope.preY=-1;
+				scope.preDistance=-1;
+			}
+			this.init=function(){
+				/*function test(){
+                    console.log(scope.preY);
+                    requestAnimationFrame(test);
+                }test();*/
+				document.addEventListener( 'touchmove', scope.onTouchMove, false );
+				document.addEventListener( 'touchend', scope.onTouchEnd, false );
+			}
+		}
+
+
 
 	</script>
 	</body>
